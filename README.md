@@ -24,3 +24,12 @@ To edit this repository in MakeCode.
 
 * for PXT/arcade
 <script src="https://makecode.com/gh-pages-embed.js"></script><script>makeCodeRender("{{ site.makecode.home_url }}", "{{ site.github.owner_name }}/{{ site.github.repository_name }}");</script>
+
+#### How to Use Blocks
+
+run code on everyone here check every ().
+In the (), write the number of miliseconds between each check
+
+#### Please Note
+
+This extesion only works with radio. The radio group will automaticaly be set to 1.
