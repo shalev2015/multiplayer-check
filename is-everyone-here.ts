@@ -19,11 +19,25 @@ namespace Multiplayer_Check {
     // --- SETTINGS SECTION ---
 
     //% block="set max number of players $maxNum"
+    //% maxNum.shadow="math_number"
     //% maxNum.defl=2
     //% group="Settings"
     //% weight=100
     export function setMax(maxNum: number) {
-        maxPlayers = maxNum;
+        // Enforce 2-infinity range
+        maxPlayers = Math.max(2, maxNum);
+    }
+
+    //% block="reset connection"
+    //% group="Settings"
+    //% weight=95
+    export function reset() {
+        everyoneHere = false;
+        idList = [id];
+        if (pollIntervalId != -1) {
+            clearInterval(pollIntervalId);
+            pollIntervalId = -1;
+        }
     }
 
     // --- STATUS SECTION ---
@@ -35,23 +49,24 @@ namespace Multiplayer_Check {
         return everyoneHere;
     }
 
-    //% block="max number of players"
+    //% block="current player count"
     //% group="Status"
-    //% weight=80
-    export function no() : number {
-        return maxPlayers;
+    //% weight=85
+    export function playerCount(): number {
+        return idList.length;
     }
 
     // --- EVENTS SECTION ---
 
     //% block="on $numP players join, check every $pollInterval (ms)"
+    //% numP.shadow="math_number"
     //% numP.defl=2
     //% pollInterval.defl=1000
     //% group="Events"
     //% weight=80
-    //% draggableParameters="reporter"
     export function onEveryoneHere(numP: number, pollInterval: number, callback: () => void) {
-        maxPlayers = numP;
+        // Enforce 2-infinity range
+        maxPlayers = Math.max(2, numP);
 
         radio.onReceivedNumber(function (receivedNumber: number) {
             if (everyoneHere) return;
@@ -70,6 +85,9 @@ namespace Multiplayer_Check {
         radio.onReceivedMessage(RadioMessages.here, function () {
             radio.sendNumber(id);
         });
+
+        // Clear existing interval if restarting
+        if (pollIntervalId != -1) clearInterval(pollIntervalId);
 
         pollIntervalId = setInterval(() => {
             if (!everyoneHere) {
