@@ -1,106 +1,96 @@
 /**
- * Custom blocks for Multiplayer Sync
+ * Custom blocks for Multiplayer Sync with Unique ID & P-Num Mapping
  */
 //% color="#2695b5" icon="\uf0c0"
 //% groups=['Events', 'Status', 'Settings']
 namespace Multiplayer_Check {
     let everyoneHere = false;
-    let id = randint(100000, 999999);
+    let id = randint(100000, 999999) + control.millis();
     let idList: number[] = [id];
-    let pollIntervalId = -1;
+    let lastSeen: { [key: number]: number } = {};
     let maxPlayers = 2;
+    let disconnectCallback: () => void = null;
 
     radio.setGroup(1);
-
-    enum RadioMessages {
-        here = 15547
-    }
+    lastSeen[id] = control.millis();
 
     // --- SETTINGS SECTION ---
 
     //% block="set max number of players $maxNum"
-    //% maxNum.shadow="math_number"
-    //% maxNum.defl=2
     //% group="Settings"
-    //% weight=100
     export function setMax(maxNum: number) {
-        // Enforce 2-infinity range
         maxPlayers = Math.max(2, maxNum);
     }
 
-    //% block="reset connection"
-    //% group="Settings"
-    //% weight=95
-    export function reset() {
-        everyoneHere = false;
-        idList = [id];
-        if (pollIntervalId != -1) {
-            clearInterval(pollIntervalId);
-            pollIntervalId = -1;
-        }
+    // --- EVENTS SECTION ---
+
+    //% block="on player disconnect"
+    //% group="Events"
+    export function onDisconnect(callback: () => void) {
+        disconnectCallback = callback;
+    }
+
+    //% block="on $numP players join, check every $pollInterval (ms)"
+    //% group="Events"
+    export function onEveryoneHere(numP: number, pollInterval: number, callback: () => void) {
+        maxPlayers = Math.max(2, numP);
+
+        radio.onReceivedNumber(function (receivedNumber: number) {
+            lastSeen[receivedNumber] = control.millis();
+
+            if (idList.indexOf(receivedNumber) == -1) {
+                idList.push(receivedNumber);
+                idList = idList.filter((value, index) => idList.indexOf(value) === index);
+
+                if (idList.length >= maxPlayers && !everyoneHere) {
+                    everyoneHere = true;
+                    callback();
+                }
+            }
+        });
+
+        game.onUpdateInterval(pollInterval, function () {
+            let currentTime = control.millis();
+            let timeout = pollInterval * 3;
+
+            for (let i = idList.length - 1; i >= 0; i--) {
+                let checkId = idList[i];
+                if (checkId != id && (currentTime - lastSeen[checkId] > timeout)) {
+                    idList.removeAt(i);
+                    everyoneHere = false;
+                    if (disconnectCallback) disconnectCallback();
+                }
+            }
+            radio.sendNumber(id);
+        });
     }
 
     // --- STATUS SECTION ---
 
+    //% block="my player number (P1-P4)"
+    //% group="Status"
+    //% weight=100
+    export function pNum(): number {
+        // Returns 1 for Player 1, 2 for Player 2, etc.
+        return idList.indexOf(id) + 1;
+    }
+
+    //% block="player number for ID $targetId"
+    //% group="Status"
+    export function pNumForId(targetId: number): number {
+        let index = idList.indexOf(targetId);
+        return index === -1 ? 0 : index + 1;
+    }
+
     //% block="everyone here"
     //% group="Status"
-    //% weight=90
     export function checkEveryoneHere(): boolean {
         return everyoneHere;
     }
 
     //% block="current player count"
     //% group="Status"
-    //% weight=85
     export function playerCount(): number {
         return idList.length;
-    }
-
-    //% block="max number of players"
-    //% group="Status"
-    //% weight=80
-    export function checkMaxNum(): number {
-        return maxPlayers
-    }
-
-    // --- EVENTS SECTION ---
-
-    //% block="on $numP players join, check every $pollInterval (ms)"
-    //% numP.shadow="math_number"
-    //% numP.defl=2
-    //% pollInterval.defl=1000
-    //% group="Events"
-    //% weight=80
-    export function onEveryoneHere(numP: number, pollInterval: number, callback: () => void) {
-        // Enforce 2-infinity range
-        maxPlayers = Math.max(2, numP);
-
-        radio.onReceivedNumber(function (receivedNumber: number) {
-            if (everyoneHere) return;
-
-            if (receivedNumber != id && idList.indexOf(receivedNumber) == -1) {
-                idList.push(receivedNumber);
-            }
-
-            if (idList.length >= maxPlayers) {
-                everyoneHere = true;
-                clearInterval(pollIntervalId);
-                callback();
-            }
-        });
-
-        radio.onReceivedMessage(RadioMessages.here, function () {
-            radio.sendNumber(id);
-        });
-
-        // Clear existing interval if restarting
-        if (pollIntervalId != -1) clearInterval(pollIntervalId);
-
-        pollIntervalId = setInterval(() => {
-            if (!everyoneHere) {
-                radio.sendMessage(RadioMessages.here);
-                radio.sendNumber(id);
-            }
-        }, pollInterval);
     }
 }
