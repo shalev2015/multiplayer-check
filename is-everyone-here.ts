@@ -68,7 +68,7 @@ namespace Multiplayer_Check {
     // --- STATUS SECTION ---
 
     //% block="my player number (P1-P4)"
-    //% group="Status"
+    //% group="Multiplayer Compactible"
     //% weight=100
     export function pNum(): number {
         // Returns 1 for Player 1, 2 for Player 2, etc.
@@ -76,7 +76,7 @@ namespace Multiplayer_Check {
     }
 
     //% block="player number for ID $targetId"
-    //% group="Status"
+    //% group="Multiplayer Compactible"
     export function pNumForId(targetId: number): number {
         let index = idList.indexOf(targetId);
         return index === -1 ? 0 : index + 1;
