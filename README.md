@@ -27,8 +27,8 @@ To edit this repository in MakeCode.
 
 #### How to Use Blocks
 
-run code on everyone here check every ().
-In the (), write the number of miliseconds between each check
+run code on (1) here check every (2).
+ In the (1), write the number of players you are checking for (2-infinity). In the (2), write the number of ms of intervals to check. set max number of players (1). In the (1), write the number of max players posible. reset connection. Resets the array of players. everyone here. Returns true or false, depending on if the number of players joined is equal to the max number of players. current player count. returns the number of current players.
 
 #### Please Note
 
