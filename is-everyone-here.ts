@@ -45,7 +45,7 @@ namespace Multiplayer_Check {
     //% block="everyone here"
     //% group="Status"
     //% weight=90
-    export function yeah(): boolean {
+    export function checkEveryoneHere(): boolean {
         return everyoneHere;
     }
 
@@ -54,6 +54,13 @@ namespace Multiplayer_Check {
     //% weight=85
     export function playerCount(): number {
         return idList.length;
+    }
+
+    //% block="max number of players"
+    //% group="status"
+    //% weight=80
+    export function checkMaxNum(): number {
+        return maxPlayers
     }
 
     // --- EVENTS SECTION ---
