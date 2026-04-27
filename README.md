@@ -1,7 +1,7 @@
  
 
 
-> Open this page at [https://shalev2015.github.io/two-plyer-check/](https://shalev2015.github.io/two-plyer-check/)
+> Open this page at [https://shalev2015.github.io/multiplayer-check/](https://shalev2015.github.io/two-plyer-check/)
 
 ## Use as Extension
 
@@ -10,7 +10,7 @@ This repository can be added as an **extension** in MakeCode.
 * open [https://arcade.makecode.com/](https://arcade.makecode.com/)
 * click on **New Project**
 * click on **Extensions** under the gearwheel menu
-* search for **https://github.com/shalev2015/two-plyer-check** and import
+* search for **https://github.com/shalev2015/multiplayer-check** and import
 
 ## Edit this project
 
@@ -18,7 +18,7 @@ To edit this repository in MakeCode.
 
 * open [https://arcade.makecode.com/](https://arcade.makecode.com/)
 * click on **Import** then click on **Import URL**
-* paste **https://github.com/shalev2015/two-plyer-check** and click import
+* paste **https://github.com/shalev2015/multiplayer-check** and click import
 
 #### Metadata (used for search, rendering)
 
