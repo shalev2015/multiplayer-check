@@ -92,7 +92,7 @@ namespace Multiplayer_Check {
         return idList.indexOf(id) + 1;
     }
 
-    //% block="player number for ID $targetId"
+    //% block="player ID for number $targetId"
     //% group="Multiplayer Compactible"
     //% weight=90
     export function pNumForId(targetId: number): number {
