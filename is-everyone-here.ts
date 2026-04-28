@@ -97,10 +97,12 @@ namespace Multiplayer_Check {
         maxPlayers = Math.max(2, maxNum);
     }
 
+    // --- MORE SUBSECTION ---
     // --- MULTIPLAYER COMPACTIBLE SECTION ---
 
     //% block="my player number (P1-P4)"
     //% group="Multiplayer Compactible"
+    //% subcategory="More"
     //% weight=100
     export function pNum(): number {
         return idList.indexOf(id) + 1;
@@ -108,9 +110,10 @@ namespace Multiplayer_Check {
 
     //% block="player ID for number $targetId"
     //% group="Multiplayer Compactible"
+    //% subcategory="More"
     //% weight=90
     export function pNumForId(targetId: number): number {
         let index = idList.indexOf(targetId);
         return index === -1 ? 0 : index + 1;
     }
-}
+ }
