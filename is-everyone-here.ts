@@ -82,6 +82,13 @@ namespace Multiplayer_Check {
         return id;
     }
 
+    //% block="array of all devices"
+    //% group="Status"
+    //% weight=70
+    export function returnIDlist(): number[] {
+        return idList;
+    }
+
     // --- SETTINGS SECTION ---
 
     //% block="set max number of players $maxNum"
