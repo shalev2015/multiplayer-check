@@ -75,6 +75,13 @@ namespace Multiplayer_Check {
         return idList.length;
     }
 
+    //% block="my ID"
+    //% group="Status"
+    //% weight=80
+    export function yourId(): number {
+        return id;
+    }
+
     // --- SETTINGS SECTION ---
 
     //% block="set max number of players $maxNum"
