@@ -26,7 +26,7 @@ namespace Multiplayer_Check {
     //% block="on $numP players join, check every $pollInterval (ms)"
     //% group="Events"
     //% weight=100
-    export function onEveryoneHere(numP: number, pollInterval: number, callback: () => void) {
+    export function on__PHere(numP: number, pollInterval: number, callback: () => void) {
         maxPlayers = Math.max(2, numP);
 
         radio.onReceivedNumber(function (receivedNumber: number) {
@@ -85,7 +85,7 @@ namespace Multiplayer_Check {
     //% block="array of all devices"
     //% group="Status"
     //% weight=70
-    export function returnIDlist(): number[] {
+    export function arrayOfAllDevices(): number[] {
         return idList;
     }
 
