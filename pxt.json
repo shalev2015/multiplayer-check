@@ -1,19 +1,16 @@
 {
-    "name": "Two Player Check",
-    "description": "",
+    "name": "multiplayer-check",
+    "description": "A Makecode Arcade extension to track when a player joins the game, and leaves the game. It can also translate the device ID (generated randomly by extension) to a player number (1-4).",
+    "license": "MIT",
     "dependencies": {
         "device": "*",
-        "radio-broadcast": "*",
-        "multiplayer": "*"
+        "radio": "*"
     },
     "files": [
         "main.blocks",
         "main.ts",
         "README.md",
-        "assets.json",
-        "is-everyone-here.ts",
-        "tilemap.g.jres",
-        "tilemap.g.ts"
+        "is-everyone-here.ts"
     ],
     "testFiles": [
         "test.ts"
