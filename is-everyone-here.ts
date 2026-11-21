@@ -23,14 +23,6 @@ namespace Multiplayer_Check {
         idList.sort((a, b) => a - b)
     }
 
-    function numberToMpPlayer(num: number): mp.Player {
-        if (num === 1) return mp.playerSelector(mp.PlayerNumber.One)
-        if (num === 2) return mp.playerSelector(mp.PlayerNumber.Two)
-        if (num === 3) return mp.playerSelector(mp.PlayerNumber.Three)
-        if (num === 4) return mp.playerSelector(mp.PlayerNumber.Four)
-        return null
-    }
-
     // ==========================================
     // BACKGROUND SYNC & HEARTBEAT
     // ==========================================
@@ -227,27 +219,5 @@ namespace Multiplayer_Check {
     export function pNumForId(targetId: number): number {
         let index = idList.indexOf(targetId)
         return index === -1 ? 0 : index + 1
-    }
-
-    /**
-     * Returns the native MakeCode mp.Player object corresponding to your device.
-     */
-    //% block="my mp player"
-    //% group="Multiplayer Compactible"
-    //% subcategory="More"
-    //% weight=80
-    export function myMpPlayer(): mp.Player {
-        return numberToMpPlayer(pNum())
-    }
-
-    /**
-     * Returns the native MakeCode mp.Player object for any given device ID.
-     */
-    //% block="mp player for ID $targetId"
-    //% group="Multiplayer Compactible"
-    //% subcategory="More"
-    //% weight=70
-    export function mpPlayerForId(targetId: number): mp.Player {
-        return numberToMpPlayer(pNumForId(targetId))
     }
 }
