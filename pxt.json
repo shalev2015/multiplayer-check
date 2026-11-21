@@ -1,5 +1,5 @@
 {
-    "name": "Multiplayer-Player Check",
+    "name": "multiplayer-check",
     "version": "0.1.1",
     "description": "A MakeCode Arcade extension for checking how many devices are connected and performing actions when a device leaves/joins.",
     "dependencies": {
@@ -7,13 +7,10 @@
         "radio": "*"
     },
     "files": [
-        "main.blocks",
-        "main.ts",
-        "README.md",
-        "assets.json",
+        "test.ts",
         "multiplayer-check.ts",
-        "tilemap.g.jres",
-        "tilemap.g.ts"
+        "README.md",
+        "assets.json"
     ],
     "testFiles": [
         "test.ts"
