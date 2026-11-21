@@ -23,12 +23,9 @@ namespace Multiplayer_Check {
         idList.sort((a, b) => a - b)
     }
 
-    // ==========================================
-    // BACKGROUND SYNC & HEARTBEAT
-    // ==========================================
-
-    radio.onReceivedNumber(function (receivedNumber: number) {
-        // Ignore unknown players if the room is already at max capacity
+    function handleIncomingId(receivedNumber: number) {
+        // Ignore self-packets or unknown players when the room is at max capacity
+        if (receivedNumber === id) return
         if (idList.indexOf(receivedNumber) === -1 && idList.length >= maxPlayers) {
             return
         }
@@ -52,6 +49,14 @@ namespace Multiplayer_Check {
                 everyoneHereCallback()
             }
         }
+    }
+
+    // ==========================================
+    // BACKGROUND SYNC & HEARTBEAT
+    // ==========================================
+
+    radio.onReceivedNumber(function (receivedNumber: number) {
+        handleIncomingId(receivedNumber)
     })
 
     game.onUpdate(function () {
@@ -64,6 +69,7 @@ namespace Multiplayer_Check {
                 let checkId = idList[i]
                 if (checkId !== id && (currentTime - lastSeen[checkId] > timeout)) {
                     idList.removeAt(i)
+                    delete lastSeen[checkId]
                     sortIds()
                     everyoneHere = false
 
@@ -98,7 +104,7 @@ namespace Multiplayer_Check {
 
         if (idList.length >= maxPlayers && !everyoneHere) {
             everyoneHere = true
-            callback()
+            control.runInParallel(callback)
         }
     }
 
@@ -163,7 +169,7 @@ namespace Multiplayer_Check {
     //% group="Status"
     //% weight=70
     export function arrayOfAllDevices(): number[] {
-        return idList
+        return idList.slice()
     }
 
     // ==========================================
@@ -179,6 +185,12 @@ namespace Multiplayer_Check {
     //% maxNum.defl=4
     export function setMax(maxNum: number): void {
         maxPlayers = Math.max(2, maxNum)
+        if (idList.length >= maxPlayers && !everyoneHere) {
+            everyoneHere = true
+            if (everyoneHereCallback) {
+                control.runInParallel(everyoneHereCallback)
+            }
+        }
     }
 
     /**
@@ -191,6 +203,8 @@ namespace Multiplayer_Check {
     export function setLobby(group: number): void {
         radio.setGroup(group)
         idList = [id]
+        lastSeen = {}
+        lastSeen[id] = control.millis()
         everyoneHere = false
     }
 
@@ -219,5 +233,13 @@ namespace Multiplayer_Check {
     export function pNumForId(targetId: number): number {
         let index = idList.indexOf(targetId)
         return index === -1 ? 0 : index + 1
+    }
+
+    // ==========================================
+    // INTERNAL DEBUG / TEST HELPER (HIDDEN FROM BLOCKS)
+    // ==========================================
+
+    export function _simulateReceive(fakeId: number): void {
+        handleIncomingId(fakeId)
     }
 }
