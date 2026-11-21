@@ -8,7 +8,7 @@ namespace Multiplayer_Check {
     let id = randint(100000, 999999) + control.millis()
     let idList: number[] = [id]
     let lastSeen: { [key: number]: number } = {}
-    let maxPlayers = 4
+    let maxPlayers = 3
     let currentPollInterval = 500
     let lastHeartbeat = 0
 
