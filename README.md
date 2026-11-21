@@ -14,7 +14,7 @@ This repository can be added as an **extension** in MakeCode:
 1. Open [MakeCode Arcade](https://makecode.com)
 2. Click **New Project**
 3. Click **Extensions** under the gearwheel menu
-4. Search for `https://github.com` and import
+4. Search for `https://github.com/shalev2015/multiplayer-check` and import
 
 ## Edit this Project
 
@@ -22,7 +22,7 @@ To edit this repository in MakeCode:
 
 1. Open [MakeCode Arcade](https://makecode.com)
 2. Click **Import**, then **Import URL**
-3. Paste `https://github.com` and click **Import**
+3. Paste `https://github.com/shalev2015/multiplayer-check` and click **Import**
 
 ---
 
