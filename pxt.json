@@ -1,7 +1,7 @@
 {
-    "name": "Two Player Check",
+    "name": "Multiplayer-Player Check",
     "version": "0.0.2",
-    "description": "",
+    "description": "A MakeCode Arcade extension for checking how many devices are connected and performing actions when a device leaves/joins.",
     "dependencies": {
         "device": "*",
         "radio": "*"
