@@ -10,7 +10,6 @@
     "files": [
         "README.md",
         "assets.json",
-        "icon.png",
         "multiplayer-check.ts",
         "main.ts"
     ],
