@@ -3,13 +3,14 @@
 // ============================================================================
 
 let statusBanner = "Waiting for players..."
+let lastMsgBanner = "Msg: None yet"
 
 // 1. Setup & Configuration Tests
 Multiplayer_Check.setLobby(42)
 Multiplayer_Check.setMax(3)
 
-let myId = Multiplayer_Check.yourId()
-console.log("Local Device ID: " + myId)
+let initialId = Multiplayer_Check.yourId()
+console.log("Local Device ID: " + initialId)
 console.log("Initial Count (Expected 1): " + Multiplayer_Check.playerCount())
 console.log("Initial P-Num (Expected 1): " + Multiplayer_Check.pNum())
 console.log("Everyone Here? (Expected false): " + Multiplayer_Check.checkEveryoneHere())
@@ -32,23 +33,37 @@ Multiplayer_Check.on__PHere(3, 500, function () {
     console.log("[EVENT] Everyone Here! Device Order: " + Multiplayer_Check.arrayOfAllDevices().join(", "))
 })
 
-// 3. On-Screen HUD
+// 3. New Messaging Event Handlers
+Multiplayer_Check.onReceivedPlayerValue(function (playerNum, name, value) {
+    lastMsgBanner = "P" + playerNum + " " + name + "=" + value
+    console.log("[MSG-PLAYER] From P" + playerNum + " | " + name + " = " + value)
+})
+
+Multiplayer_Check.onReceivedGameValue(function (name, value) {
+    lastMsgBanner = "Game " + name + "=" + value
+    console.log("[MSG-GAME] " + name + " = " + value)
+})
+
+// 4. On-Screen HUD
 game.onPaint(function () {
-    screen.print("My ID: " + Multiplayer_Check.yourId(), 4, 4, 1)
+    let currentId = Multiplayer_Check.yourId()
+    screen.print("My ID: " + currentId, 4, 4, 1)
     screen.print("Role: P" + Multiplayer_Check.pNum() + " | Count: " + Multiplayer_Check.playerCount() + "/3", 4, 14, 5)
     screen.print("Ready: " + (Multiplayer_Check.checkEveryoneHere() ? "YES" : "NO"), 4, 24, Multiplayer_Check.checkEveryoneHere() ? 7 : 2)
     screen.print(statusBanner, 4, 34, 14)
+    screen.print(lastMsgBanner, 4, 44, 9)
 
     let devices = Multiplayer_Check.arrayOfAllDevices()
-    screen.print("Sorted IDs & Mapping:", 4, 48, 1)
+    screen.print("Sorted IDs & Mapping:", 4, 56, 1)
     for (let i = 0; i < devices.length; i++) {
         let devId = devices[i]
         let mappedP = Multiplayer_Check.pNumForId(devId)
-        let label = (devId == myId) ? " (YOU)" : ""
-        screen.print("P" + mappedP + ": " + devId + label, 8, 58 + (i * 10), 15)
+        let label = (devId == currentId) ? " (YOU)" : ""
+        screen.print("P" + mappedP + ": " + devId + label, 8, 66 + (i * 9), 15)
     }
 
-    screen.print("[A] Join  [B] Full  [Menu] Drop", 4, 108, 1)
+    screen.print("[A]Join [B]Full [Up]Msg [Dn]Clash", 2, 102, 1)
+    screen.print("[Menu] Drop Peers", 2, 111, 1)
 })
 
 // ============================================================================
@@ -58,13 +73,16 @@ let fakeIdLower = 100001
 let fakeIdHigher = 9999999
 let fakeIdOverflow = 555555
 let keepFakeAlive = false
+let testScore = 10
 
+// [A] Simulate 2 peers joining & staying alive
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     keepFakeAlive = true
     Multiplayer_Check._simulateReceive(fakeIdLower)
     Multiplayer_Check._simulateReceive(fakeIdHigher)
 })
 
+// [B] Test unknown ID lookup & max-player overflow rejection
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     let unknownP = Multiplayer_Check.pNumForId(123456)
     console.log("Unknown ID Lookup (Expected 0): " + unknownP)
@@ -74,6 +92,25 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     statusBanner = "Overflow test -> Count: " + Multiplayer_Check.playerCount()
 })
 
+// [Up] Test sending both player-tagged and untagged game values
+controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+    testScore += 5
+    Multiplayer_Check.sendPlayerValue("score", testScore)
+    Multiplayer_Check.sendGameValue("round", 2)
+    lastMsgBanner = "Sent P" + Multiplayer_Check.pNum() + " score=" + testScore
+    console.log("[SENT] Player score=" + testScore + " & Game round=2")
+})
+
+// [Down] Test ID collision reroll (simulates another device broadcasting our ID)
+controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+    let beforeId = Multiplayer_Check.yourId()
+    Multiplayer_Check._simulateReceive(beforeId)
+    let afterId = Multiplayer_Check.yourId()
+    console.log("[COLLISION TEST] Old ID: " + beforeId + " -> New ID: " + afterId)
+    statusBanner = "Rerolled ID! Changed: " + (beforeId != afterId)
+})
+
+// [Menu] Stop simulated heartbeats to test timeout disconnect
 controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
     keepFakeAlive = false
     statusBanner = "Stopped heartbeats (~1.5s drop)..."
