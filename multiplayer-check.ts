@@ -2,10 +2,12 @@
  * Custom blocks for Multiplayer Sync with Unique ID & P# Mapping
  */
 //% color="#2695b5" icon="\uf234"
-//% groups=['Events', 'Status', 'Settings', 'Multiplayer Compactible']
+//% groups=['Events', 'Status', 'Messaging', 'Settings', 'Multiplayer Compactible']
 namespace Multiplayer_Check {
+    const HEARTBEAT_KEY = "mp_hb"
+
     let everyoneHere = false
-    let id = randint(100000, 999999) + control.millis()
+    let id = generateNewId()
     let idList: number[] = [id]
     let lastSeen: { [key: number]: number } = {}
     let maxPlayers = 3
@@ -15,17 +17,56 @@ namespace Multiplayer_Check {
     let disconnectCallback: () => void = null
     let joinCallback: () => void = null
     let everyoneHereCallback: () => void = null
+    let gameValueCallback: (name: string, value: number) => void = null
+    let playerValueCallback: (playerNum: number, name: string, value: number) => void = null
 
     radio.setGroup(1)
     lastSeen[id] = control.millis()
+
+    function generateNewId(): number {
+        return randint(100000, 999999) + control.millis()
+    }
 
     function sortIds() {
         idList.sort((a, b) => a - b)
     }
 
+    function rerollMyId() {
+        let oldId = id
+        let oldIndex = idList.indexOf(oldId)
+        if (oldIndex !== -1) {
+            idList.removeAt(oldIndex)
+        }
+        lastSeen[oldId] = 0
+
+        // Generate a fresh ID that doesn't match the old one or any active player
+        while (id === oldId || idList.indexOf(id) !== -1) {
+            id = generateNewId()
+        }
+
+        idList.push(id)
+        lastSeen[id] = control.millis()
+        sortIds()
+        radio.sendValue(HEARTBEAT_KEY, id)
+    }
+
     function handleIncomingId(receivedNumber: number) {
-        // Ignore self-packets or unknown players when the room is at max capacity
-        if (receivedNumber === id) return
+        // Detect ID collision: another device broadcast our exact ID
+        if (receivedNumber === id) {
+            rerollMyId()
+            // Keep the other device's ID in our list so we don't lose track of them
+            if (idList.indexOf(receivedNumber) === -1 && idList.length < maxPlayers) {
+                idList.push(receivedNumber)
+                lastSeen[receivedNumber] = control.millis()
+                sortIds()
+                if (joinCallback) {
+                    joinCallback()
+                }
+            }
+            return
+        }
+
+        // Ignore unknown players when the room is at max capacity
         if (idList.indexOf(receivedNumber) === -1 && idList.length >= maxPlayers) {
             return
         }
@@ -55,8 +96,21 @@ namespace Multiplayer_Check {
     // BACKGROUND SYNC & HEARTBEAT
     // ==========================================
 
-    radio.onReceivedNumber(function (receivedNumber: number) {
-        handleIncomingId(receivedNumber)
+    radio.onReceivedValue(function (name: string, value: number) {
+        if (name === HEARTBEAT_KEY) {
+            handleIncomingId(value)
+        } else if (name.length >= 2 && name.charAt(1) === ":") {
+            let senderPNum = parseInt(name.charAt(0))
+            let cleanName = name.substr(2)
+            if (playerValueCallback && !isNaN(senderPNum)) {
+                playerValueCallback(senderPNum, cleanName, value)
+            }
+            if (gameValueCallback) {
+                gameValueCallback(cleanName, value)
+            }
+        } else if (gameValueCallback) {
+            gameValueCallback(name, value)
+        }
     })
 
     game.onUpdate(function () {
@@ -79,7 +133,7 @@ namespace Multiplayer_Check {
                 }
             }
 
-            radio.sendNumber(id)
+            radio.sendValue(HEARTBEAT_KEY, id)
         }
     })
 
@@ -173,6 +227,64 @@ namespace Multiplayer_Check {
     }
 
     // ==========================================
+    // MESSAGING SECTION
+    // ==========================================
+
+    /**
+     * Sends a named number value tagged with your current player number (P1-P4).
+     * @param name key name (max 6 characters), eg: "score"
+     * @param value numeric value to send
+     */
+    //% block="send player value $name = $value"
+    //% group="Messaging"
+    //% weight=100
+    //% name.defl="score"
+    export function sendPlayerValue(name: string, value: number): void {
+        let myP = pNum()
+        if (name !== HEARTBEAT_KEY && myP > 0 && myP < 10) {
+            let taggedName = myP + ":" + name.substr(0, 6)
+            radio.sendValue(taggedName, value)
+        }
+    }
+
+    /**
+     * Runs code whenever a player-tagged value is received, providing the sender's player number.
+     */
+    //% block="on received from player $playerNum value $name $value"
+    //% group="Messaging"
+    //% weight=95
+    //% draggableParameters="reporter"
+    export function onReceivedPlayerValue(callback: (playerNum: number, name: string, value: number) => void): void {
+        playerValueCallback = callback
+    }
+
+    /**
+     * Sends a named number value to other players without interfering with multiplayer sync.
+     * @param name key name (max 8 characters), eg: "score"
+     * @param value numeric value to send
+     */
+    //% block="send game value $name = $value"
+    //% group="Messaging"
+    //% weight=85
+    //% name.defl="score"
+    export function sendGameValue(name: string, value: number): void {
+        if (name !== HEARTBEAT_KEY) {
+            radio.sendValue(name, value)
+        }
+    }
+
+    /**
+     * Runs code whenever a game value is received from another device.
+     */
+    //% block="on received game value $name $value"
+    //% group="Messaging"
+    //% weight=80
+    //% draggableParameters="reporter"
+    export function onReceivedGameValue(callback: (name: string, value: number) => void): void {
+        gameValueCallback = callback
+    }
+
+    // ==========================================
     // SETTINGS SECTION
     // ==========================================
 
@@ -207,14 +319,12 @@ namespace Multiplayer_Check {
         lastSeen[id] = control.millis()
         everyoneHere = false
     }
-
     // ==========================================
     // MORE SUBSECTION (MULTIPLAYER COMPACTIBLE)
     // ==========================================
-
     /**
-     * Returns your assigned player number (1-4) based on sorted ID order.
-     */
+    * Returns your assigned player number (1-4) based on sorted ID order.
+    */
     //% block="my player number (P1-P4)"
     //% group="Multiplayer Compactible"
     //% subcategory="More"
@@ -222,10 +332,9 @@ namespace Multiplayer_Check {
     export function pNum(): number {
         return idList.indexOf(id) + 1
     }
-
     /**
-     * Returns the player number (1-4) for any given device ID. Returns 0 if not found.
-     */
+    * Returns the player number (1-4) for any given device ID. Returns 0 if not found.
+    */
     //% block="player number for ID $targetId"
     //% group="Multiplayer Compactible"
     //% subcategory="More"
@@ -234,11 +343,9 @@ namespace Multiplayer_Check {
         let index = idList.indexOf(targetId)
         return index === -1 ? 0 : index + 1
     }
-
     // ==========================================
     // INTERNAL DEBUG / TEST HELPER (HIDDEN FROM BLOCKS)
     // ==========================================
-
     export function _simulateReceive(fakeId: number): void {
         handleIncomingId(fakeId)
     }

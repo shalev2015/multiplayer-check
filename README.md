@@ -1,11 +1,8 @@
- 
-
-
 > Open this page at [https://shalev2015.github.io/multiplayer-check/](https://shalev2015.github.io/multiplayer-check/)
 
 # Multiplayer Check
 
-A MakeCode Arcade extension for syncing radio multiplayer lobbies, detecting player joins and disconnects, and assigning consistent player numbers (`P1`–`P4`) across devices.
+A MakeCode Arcade extension for syncing radio multiplayer lobbies, detecting player joins and disconnects, assigning consistent player numbers (`P1`–`P4`) across devices, and sending player-tagged radio messages.
 
 ## Use as Extension
 
@@ -28,7 +25,7 @@ To edit this repository in MakeCode:
 
 ## Quick Start Example
 
-Set your radio channel, wait for players to join, and assign each device its player number:
+Set your radio channel, wait for players to join, assign each device its player number, and send player-tagged game values:
 
 ```blocks
 Multiplayer_Check.setLobby(1)
@@ -40,6 +37,11 @@ Multiplayer_Check.onJoin(function () {
 
 Multiplayer_Check.on__PHere(2, 500, function () {
     game.splash("Lobby full! I am Player " + Multiplayer_Check.pNum())
+    Multiplayer_Check.sendPlayerValue("score", 10)
+})
+
+Multiplayer_Check.onReceivedPlayerValue(function (playerNum, name, value) {
+    game.splash("P" + playerNum + " sent " + name + ": " + value)
 })
 
 Multiplayer_Check.onDisconnect(function () {
@@ -67,9 +69,20 @@ Multiplayer_Check.onDisconnect(function () {
 * **`everyone here`**  
   Returns `true` when the connected player count reaches the target maximum; otherwise returns `false`.
 * **`my ID`**  
-  Returns the unique ID generated for your device.
+  Returns the unique ID generated for your device (automatically rerolls if an ID collision is detected).
 * **`array of all devices`**  
   Returns a sorted array containing the IDs of all currently connected devices.
+
+### Messaging
+
+* **`send player value $name = $value`**  
+  Sends a named number value tagged with your current player number (`P1`–`P4`) without interfering with multiplayer sync (`name` max 6 characters).
+* **`on received from player $playerNum value $name $value`**  
+  Runs code whenever a player-tagged value is received, providing the sender's `playerNum`, `name`, and `value`.
+* **`send game value $name = $value`**  
+  Sends an untagged named number value to other players without interfering with multiplayer sync (`name` max 8 characters).
+* **`on received game value $name $value`**  
+  Runs code whenever a game value is received from another device.
 
 ### Settings
 
