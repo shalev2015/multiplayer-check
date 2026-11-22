@@ -69,7 +69,7 @@ namespace Multiplayer_Check {
                 let checkId = idList[i]
                 if (checkId !== id && (currentTime - lastSeen[checkId] > timeout)) {
                     idList.removeAt(i)
-                    delete lastSeen[checkId]
+                    lastSeen[checkId] = 0
                     sortIds()
                     everyoneHere = false
 
