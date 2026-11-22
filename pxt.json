@@ -1,6 +1,6 @@
 {
     "name": "multiplayer-check",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "description": "A MakeCode Arcade extension for checking how many devices are connected and performing actions when a device leaves/joins.",
     "dependencies": {
         "device": "*",
