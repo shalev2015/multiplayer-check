@@ -103,4 +103,4 @@ Multiplayer_Check.onDisconnect(function () {
 #### Metadata (used for search, rendering)
 
 * for PXT/arcade
-<script src="https://makecode.com"></script><script>makeCodeRender("{{ site.makecode.home_url }}", "{{ site.github.owner_name }}/{{ site.github.repository_name }}");</script>
+<script src="https://makecode.com/gh-pages-embed.js"></script><script>makeCodeRender("https://arcade.makecode.com/", "shalev2015/multiplayer-check");</script>
