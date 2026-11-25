@@ -1,19 +1,16 @@
 {
-    "name": "Two Player Check",
-    "version": "0.0.2",
-    "description": "",
+    "name": "multiplayer-check",
+    "version": "0.2.3",
+    "description": "A MakeCode Arcade extension for checking how many devices are connected and performing actions when a device leaves/joins.",
     "dependencies": {
         "device": "*",
         "radio": "*"
     },
     "files": [
-        "main.blocks",
-        "main.ts",
         "README.md",
         "assets.json",
-        "is-everyone-here.ts",
-        "tilemap.g.jres",
-        "tilemap.g.ts"
+        "multiplayer-check.ts",
+        "main.ts"
     ],
     "testFiles": [
         "test.ts"
@@ -26,5 +23,5 @@
         "arcade"
     ],
     "preferredEditor": "tsprj",
-    "theme": "default"
+    "icon": "./icon.png"
 }
